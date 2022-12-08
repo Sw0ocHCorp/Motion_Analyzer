@@ -8,25 +8,21 @@ from Tasks.MotionAnalyzer import MotionAnalyzer
 
 class ThreadPatternObserver(QThread):
     img_update= pyqtSignal(QImage)
-    def __init__(self, data_access_controler):
+    observers= np.empty((0,), object)
+    def __init__(self, data_access_controller):
         super().__init__()
-        self.observers= np.empty((0,), object)
-        self.data_controler= data_access_controler
-        self.isActive= True
-        self.cam_stream= cv.VideoCapture(0)
+        self.data_controller= data_access_controller
     def run(self):
-        while self.isActive:
-            _, stream= self.cam_stream.read()
-            if self.data_controler.data_access_is_enable():
-                for observer in self.observers:
-                    if isinstance(observer, MotionAnalyzer):
-                        stream= observer.do_task(stream)
-                    else:
-                        observer.do_task()
-            img= QImage(stream.data, stream.shape[1], stream.shape[0], QImage.Format.Format_RGB888)
-            self.img_update.emit(img)
-    def stop(self):
-        self.isActive= False
+        print("THREAD PATTERN OBSERVER RUN= ", self.data_controller.stream_access_is_enable())
+        if self.data_controller.stream_access_is_enable():
+            self.data_controller.enable_stream_access()
+            stream= self.data_controller.get_stream()
+            for observer in self.observers:
+                if isinstance(observer, MotionAnalyzer):
+                    stream= observer.do_task(stream)
+                else:
+                    observer.do_task()
+            self.data_controller.disable_stream_access()
 
     def attach_observer(self, observer):
         self.observers= np.append(self.observers, observer)

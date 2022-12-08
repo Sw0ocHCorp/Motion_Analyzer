@@ -1,16 +1,20 @@
 import sys
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
+import sys
+sys.path.insert(0, "C:\\Users\\nclsr\\OneDrive\\Bureau\\Projets_FabLab_IA\\Motion_Analyzer\\Software")
 from PyQt5.QtGui import *
 import matplotlib
-from PlotWindow import PlotWindow
+from Windows_UI.PlotWindow import PlotWindow
 matplotlib.use('Qt5Agg')
 import numpy as np
 from Thread_Software.ThreadPatternObserver import ThreadPatternObserver
 from Tasks.MotionAnalyzer import MotionAnalyzer
+from Tasks.PlotDataTask import PlotDataTask
 from Thread_Software.DataAccessController import DataAccessController
+from Thread_Software.ThreadVid import ThreadVid
 
-class AnalyzerWindow(QWidget):
+class AnalyzerWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Motion Analyzer")
@@ -20,21 +24,24 @@ class AnalyzerWindow(QWidget):
         self.vidcap_layout= QVBoxLayout()
         self.video_label= QLabel()
         self.plot_window= PlotWindow()
-        self.plot_window.plot_data(np.array([0, 1]), np.array([0, 1]))
+        self.main_widget= QWidget()
         self.vidcap_layout.addWidget(self.video_label)
         self.metric_layout.addWidget(self.plot_window)
         self.data_controller= DataAccessController()
         self.motion_analyzer= MotionAnalyzer(self.data_controller)
-        self.pattern_observer= ThreadPatternObserver(self.data_controller)
-        self.pattern_observer.attach_observer(self.motion_analyzer)
-        self.pattern_observer.img_update.connect(self.updateVideo)
-        self.pattern_observer.start()
+        self.plot_task= PlotDataTask(self.plot_window)
+        self.thread_vid= ThreadVid(self.data_controller)
+        self.thread_vid.attach_observer(self.motion_analyzer)
+        self.thread_vid.attach_observer(self.plot_task)
+        self.thread_vid.start()
+        self.thread_vid.image_update.connect(self.updateVideo)
         self.main_layout.addLayout(self.vidcap_layout)
-        #self.main_layout.addLayout(self.metric_layout)
-        self.setLayout(self.main_layout)
+        self.main_layout.addLayout(self.metric_layout)
+        self.main_widget.setLayout(self.main_layout)
+        self.setCentralWidget(self.main_widget)
     
     def updateVideo(self, img):
         self.video_label.setPixmap(QPixmap.fromImage(img))
     
-    def closeEvent(self):
-        self.pattern_observer.stop()
+    def closeEvent(self, event):
+        self.thread_vid.stop()

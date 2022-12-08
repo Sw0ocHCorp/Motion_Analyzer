@@ -1,9 +1,9 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget
-from AnalyzerWindow import AnalyzerWindow
+from Windows_UI.AnalyzerWindow import AnalyzerWindow
 
 software= QApplication(sys.argv)
 software_window= AnalyzerWindow()
 software_window.show()
 
-software.exec_()
+sys.exit(software.exec_())
