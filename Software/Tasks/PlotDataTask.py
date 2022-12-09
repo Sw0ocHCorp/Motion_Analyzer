@@ -12,4 +12,6 @@ class PlotDataTask():
         self.plot_window= plot_window
         
     def do_task(self):
-        self.plot_window.plot_data(np.array([0, 1]), np.array([0, 1]))
+        self.plot_window.plot_data(np.array([0, 1]), np.array([0, 1]), np.array([0, 1]), np.array([0, 1]), np.array([[0, 0, 0],
+                                                                                                                    [10, 5, 5],
+                                                                                                                    [10, 10, 0]]))
