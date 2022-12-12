@@ -23,9 +23,10 @@ class MotionAnalyzer():
         self.big_contour= 0
         self.peri_obj= 0
         self.loc_memory= np.empty((0, 2), int)
-        self.start_timer= time.perf_counter()
+        self.start_timer= self.start_plot_timer= time.perf_counter()
         self.data_controller= data_controller
         self.x_motion= self.y_motion= self.deg_angle= 0
+        self.time_second= -0.25
 
     def do_task(self, vid_source):
         stream= vid_source
@@ -87,8 +88,14 @@ class MotionAnalyzer():
                         y1= int(self.loc_memory[i, 1])
                         x2= int(self.loc_memory[i+1, 0])
                         y2= int(self.loc_memory[i+1, 1])
-                        cv.line(stream_source, (x1, y1), (x2, y2), (0, 0, 255-i*10), 3, 8)
+                        cv.line(stream_source, (x1, y1), (x2, y2), (0, 0, 255-i*20), 3, 8)
                         end_timer= time.perf_counter()
+                        if (end_timer - self.start_plot_timer) >= 0.25:
+                            self.time_second += 0.25
+                            #self.data_controller.enable_data_access()
+                            self.data_controller.put_move_plot_data(self.time_second, x+(w/2), y+(h/2))
+                            #self.data_controller.disable_data_access()
+                            self.start_plot_timer= time.perf_counter()
                         if (end_timer - self.start_timer) >= 1:
                             start_timer= time.perf_counter()
                             self.x_motion, self.y_motion, self.deg_angle= self.getMotionData(self.loc_memory, canny_stream, i)

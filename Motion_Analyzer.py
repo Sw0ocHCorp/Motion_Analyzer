@@ -19,10 +19,33 @@ kernel_1= np.array([[0, -1, 0],
 big_contour= 0
 peri_obj= 0
 loc_memory= np.empty((0, 2), int)
+speed_plot_data= np.empty((0,3), int)
+acc_plot_data= np.empty((0,3), int)
+plot3d_data= np.empty((0,3), int)
 start_timer= time.perf_counter()
+start_plot_timer= time.perf_counter()
 x_motion= 0
 y_motion= 0
 angle= 0
+time_second = -0.25
+speed_plot_data= np.empty((0,3), int)
+acc_plot_data= np.empty((0,3), int)
+plot3d_data= np.empty((0,3), int)
+
+def put_move_plot_data(motion_memory, speed_plot_data, acc_plot_data, plot3d_data, time_second, x_location, y_location):
+        if (motion_memory.shape[0] > 2):
+            max_index= motion_memory.shape[0] - 1
+            x_speed=  int(motion_memory[max_index,0] - motion_memory[max_index-1,0]) *4
+            y_speed= int(motion_memory[max_index,1] - motion_memory[max_index-1,1]) *4
+            speed_plot_data= np.append(speed_plot_data, np.array([[time_second, x_speed, y_speed]]), axis= 0)
+            print(speed_plot_data)
+            if (speed_plot_data > 2):
+                max_index_sp= speed_plot_data.shape[0] - 1
+                x_acc= int(speed_plot_data[max_index_sp,1] - speed_plot_data[max_index_sp-1,1]) / 2
+                y_acc= int(speed_plot_data[max_index_sp,2] - speed_plot_data[max_index_sp-1,2]) / 2
+                acc_plot_data= np.append(acc_plot_data,np.array([[time_second, x_acc, y_acc]]), axis= 0)
+            plot3d_data= np.append(plot3d_data,[x_location, 0, y_location], axis= 0)
+
 def getMotionData(motion_memory, source_stream):
     motion= np.array([motion_memory[i+1, 0] - motion_memory[i, 0], motion_memory[i+1, 1] - motion_memory[i, 1]])
     prev_motion= np.array([motion_memory[i, 0] - motion_memory[i-1, 0], motion_memory[i, 1] - motion_memory[i-1, 1]])
@@ -80,6 +103,10 @@ while True:
                     y2= int(loc_memory[i+1, 1])
                     cv.line(stream, (x1, y1), (x2, y2), (0, 0, 255-i*10), 3, 8)
                     end_timer= time.perf_counter()
+                    if (end_timer - start_plot_timer) >= 0.25:
+                            time_second += 0.25
+                            matrix_test= put_move_plot_data(loc_memory, speed_plot_data, acc_plot_data, plot3d_data, time_second, x+(w/2), y+(h/2))
+                            start_plot_timer= time.perf_counter()
                     if (end_timer - start_timer) >= 1:
                         start_timer= time.perf_counter()
                         x_motion, y_motion, angle= getMotionData(loc_memory, canny_stream)

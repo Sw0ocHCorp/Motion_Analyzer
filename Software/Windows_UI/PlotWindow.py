@@ -15,7 +15,7 @@ class PlotWindow(QWidget):
     def __init__(self):
         super(PlotWindow, self).__init__()
         self.fig= plt.figure()
-        self.grid= GridSpec(3, 2, wspace=0.4, hspace=0.3)
+        self.grid= GridSpec(4, 2, wspace=0.75, hspace=1)
         self.canva= FigureCanvasQTAgg(self.fig)
         self.toolbar = NavigationToolbar(self.canva, self)
         self.display_layout= QVBoxLayout()
@@ -45,8 +45,11 @@ class PlotWindow(QWidget):
         self.ax_aX.set_xlabel("Temps")
         self.ax_aX.set_ylabel("pxs")
         self.ax_aX.plot(accelX_array)
-        self.ax_traj= self.fig.add_subplot(self.grid[2, :], projection='3d')
+        self.ax_traj= self.fig.add_subplot(self.grid[2:3, :], projection='3d')
         self.ax_traj.set_title("Trajectoire de l'Objet")
+        self.ax_traj.set_xlabel("Position latérale (px)")
+        self.ax_traj.set_ylabel("Distance par rapport à la Caméra (px)")
+        self.ax_traj.set_zlabel("Position verticale (px)")
         self.ax_traj.plot(traj_array[:,0], traj_array[:,1], traj_array[:,2], color='red', lw=7)
         self.canva.draw()
 
@@ -58,8 +61,8 @@ if __name__ == '__main__':
     # creating a window object
     main = PlotWindow()
     main.plot_data(np.array([0, 1]), np.array([0, 1]), np.array([0, 1]), np.array([0, 1]), np.array([[0, 0, 0],
-                                                                                                    [10, 5, 5],
-                                                                                                    [10, 10, 0]]))  
+                                                                                                    [100, 50, 50],
+                                                                                                    [100, 100, 0]]))  
       
     # showing the window
     main.show()

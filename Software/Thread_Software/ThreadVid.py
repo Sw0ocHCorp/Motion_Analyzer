@@ -23,6 +23,7 @@ class ThreadVid(QThread):
                 if isinstance(observer, MotionAnalyzer):
                     self.stream= observer.do_task(self.stream)
                 else:
+                    pass
                     observer.do_task()
             #self.stream= self.data_access_controller.get_stream()
             self.stream= cv.cvtColor(self.stream, cv.COLOR_BGR2RGB)

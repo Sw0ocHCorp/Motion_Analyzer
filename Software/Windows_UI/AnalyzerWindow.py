@@ -29,7 +29,7 @@ class AnalyzerWindow(QMainWindow):
         self.metric_layout.addWidget(self.plot_window)
         self.data_controller= DataAccessController()
         self.motion_analyzer= MotionAnalyzer(self.data_controller)
-        self.plot_task= PlotDataTask(self.plot_window)
+        self.plot_task= PlotDataTask(self.plot_window, self.data_controller)
         self.thread_vid= ThreadVid(self.data_controller)
         self.thread_vid.attach_observer(self.motion_analyzer)
         self.thread_vid.attach_observer(self.plot_task)
