@@ -14,6 +14,7 @@ class PlotDataTask(QThread):
         self.data_controller= data_controller
         
     def do_task(self):
+        #self.run()
         self.start()
     def run(self):
         #self.data_controller.enable_data_access()
