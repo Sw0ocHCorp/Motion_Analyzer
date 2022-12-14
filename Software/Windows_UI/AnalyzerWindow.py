@@ -11,8 +11,9 @@ import numpy as np
 from Thread_Software.ThreadPatternObserver import ThreadPatternObserver
 from Tasks.MotionAnalyzer import MotionAnalyzer
 from Tasks.PlotDataTask import PlotDataTask
-from Thread_Software.DataAccessController import DataAccessController
+from DataAccessController import DataAccessController
 from Thread_Software.ThreadVid import ThreadVid
+from Tasks.CsvSaverTask import CsvSaverTask
 
 class AnalyzerWindow(QMainWindow):
     def __init__(self):
@@ -29,10 +30,12 @@ class AnalyzerWindow(QMainWindow):
         self.metric_layout.addWidget(self.plot_window)
         self.data_controller= DataAccessController()
         self.motion_analyzer= MotionAnalyzer(self.data_controller)
+        self.csv_task= CsvSaverTask(self.data_controller)
         self.plot_task= PlotDataTask(self.plot_window, self.data_controller)
         self.thread_vid= ThreadVid(self.data_controller)
         self.thread_vid.attach_observer(self.motion_analyzer)
         self.thread_vid.attach_observer(self.plot_task)
+        self.thread_vid.attach_observer(self.csv_task)
         self.thread_vid.start()
         self.thread_vid.image_update.connect(self.updateVideo)
         self.main_layout.addLayout(self.vidcap_layout)

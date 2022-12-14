@@ -16,9 +16,9 @@ class PlotDataTask(QThread):
     def do_task(self):
         self.start()
     def run(self):
-        self.data_controller.enable_data_access()
+        #self.data_controller.enable_data_access()
         self.speed_plot_data, self.acc_plot_data, self.plot3d_data= self.data_controller.get_motion_plot_data()
-        self.data_controller.disable_data_access()
+        #self.data_controller.disable_data_access()
         speed_y= np.column_stack((self.speed_plot_data[:,0], self.speed_plot_data[:,2]))
         speed_x= np.column_stack((self.speed_plot_data[:,0], self.speed_plot_data[:,1]))
         acc_y= np.column_stack((self.acc_plot_data[:,0], self.acc_plot_data[:,2]))

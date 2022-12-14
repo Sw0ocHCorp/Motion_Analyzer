@@ -4,6 +4,7 @@ from PyQt5.QtGui import *
 import numpy as np
 import cv2 as cv
 from Tasks.MotionAnalyzer import MotionAnalyzer
+from Tasks.CsvSaverTask import CsvSaverTask
 
 class ThreadVid(QThread):
     image_update= pyqtSignal(QImage)
@@ -33,6 +34,9 @@ class ThreadVid(QThread):
 
     def stop(self):
         self.isActive= False
+        for observer in self.observers:
+                if isinstance(observer, CsvSaverTask):
+                    self.stream= observer.end_task()
         self.quit()
 
     def attach_observer(self, observer):

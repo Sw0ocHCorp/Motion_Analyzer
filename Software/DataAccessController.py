@@ -33,6 +33,7 @@ class DataAccessController():
                 self.x_acc= int(self.speed_plot_data[max_index_sp,1] - self.speed_plot_data[max_index_sp-1,1]) / 2
                 self.y_acc= int(self.speed_plot_data[max_index_sp,2] - self.speed_plot_data[max_index_sp-1,2]) / 2
                 self.acc_plot_data= np.append(self.acc_plot_data,np.array([[time_second, self.x_acc, self.y_acc]]), axis= 0)
+                #print(time_second, self.x_speed, self.y_speed, self.x_acc, self.y_acc)
             self.plot3d_data= np.append(self.plot3d_data,np.array([[x_location, 0, y_location]]), axis= 0)
 
     def get_motion_plot_data(self):
