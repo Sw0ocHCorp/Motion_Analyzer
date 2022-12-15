@@ -10,6 +10,37 @@ class DataAccessController():
         self.acc_plot_data= np.empty((0,3), int)
         self.plot3d_data= np.empty((0,3), int)
         self.x_motion= self.y_motion= self.deg_angle= 0
+        self.detection= False
+        self.kernel= np.array([[0, -1, 0], 
+                                 [-1, 8, -1], 
+                                 [0, -1, 0]])
+        self.ref_timer= 0.25
+        self.thresh_mode= 0
+
+    def update_kernel(self, cent_val, mode):
+        if mode == "sharpen":
+            self.kernel= np.array([[0, -1, 0], 
+                                    [-1, cent_val, -1], 
+                                    [0, -1, 0]])
+        elif mode == "smooth":
+            self.kernel= np.array([[0, 1, 0], 
+                                    [1, cent_val, 1], 
+                                    [0, 1, 0]])
+    
+    def get_kernel(self):
+        return self.kernel
+
+    def set_ref_timer(self, ref_timer):
+        self.ref_timer= ref_timer / 1000
+
+    def get_ref_timer(self):
+        return self.ref_timer
+
+    def set_thresh_method(self, method_id):
+            self.thresh_mode= method_id
+    
+    def get_thresh_method(self):
+        return self.thresh_mode
 
     def get_motion_memory(self):
         if(self.motion_memory.shape[0]  > 10):

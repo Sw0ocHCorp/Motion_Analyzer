@@ -1,9 +1,8 @@
 import sys
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
-import sys
-sys.path.insert(0, "C:\\Users\\nclsr\\OneDrive\\Bureau\\Projets_FabLab_IA\\Motion_Analyzer\\Software")
 from PyQt5.QtGui import *
+sys.path.insert(0, "C:\\Users\\nclsr\\OneDrive\\Bureau\\Projets_FabLab_IA\\Motion_Analyzer\\Software")
 import matplotlib
 from Windows_UI.PlotWindow import PlotWindow
 matplotlib.use('Qt5Agg')
@@ -16,7 +15,7 @@ from Thread_Software.ThreadVid import ThreadVid
 from Tasks.CsvSaverTask import CsvSaverTask
 
 class AnalyzerWindow(QMainWindow):
-    def __init__(self):
+    def __init__(self, data_access_controller):
         super().__init__()
         self.setWindowTitle("Motion Analyzer")
         self.setGeometry(0, 0, 1900, 1000)
@@ -28,7 +27,7 @@ class AnalyzerWindow(QMainWindow):
         self.main_widget= QWidget()
         self.vidcap_layout.addWidget(self.video_label)
         self.metric_layout.addWidget(self.plot_window)
-        self.data_controller= DataAccessController()
+        self.data_controller= data_access_controller
         self.motion_analyzer= MotionAnalyzer(self.data_controller)
         self.csv_task= CsvSaverTask(self.data_controller)
         self.plot_task= PlotDataTask(self.plot_window, self.data_controller)

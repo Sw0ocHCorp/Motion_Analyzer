@@ -19,13 +19,13 @@ class ThreadVid(QThread):
         self.isRun= False
         while self.isActive:
             _, self.stream= cam_stream.read()
-            #self.data_access_controller.put_stream(self.stream)
+            self.data_access_controller.put_stream(self.stream)
             for observer in self.observers:
                 if isinstance(observer, MotionAnalyzer):
                     self.stream= observer.do_task(self.stream)
                 else:
-                    pass
-                    observer.do_task()
+                    if self.data_access_controller.detection == True:
+                        observer.do_task()
             #self.stream= self.data_access_controller.get_stream()
             self.stream= cv.cvtColor(self.stream, cv.COLOR_BGR2RGB)
             img= QImage(self.stream.data, self.stream.shape[1], self.stream.shape[0], QImage.Format.Format_RGB888)
@@ -37,6 +37,7 @@ class ThreadVid(QThread):
         for observer in self.observers:
                 if isinstance(observer, CsvSaverTask):
                     self.stream= observer.end_task()
+        print("THREAD VID STOP")
         self.quit()
 
     def attach_observer(self, observer):

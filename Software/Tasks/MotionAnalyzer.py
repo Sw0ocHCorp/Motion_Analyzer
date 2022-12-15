@@ -26,7 +26,8 @@ class MotionAnalyzer():
         self.start_timer= self.start_plot_timer= time.perf_counter()
         self.data_controller= data_controller
         self.x_motion= self.y_motion= self.deg_angle= 0
-        self.time_second= -0.25
+        self.time_second= -self.data_controller.get_ref_timer()
+        self.ref_timer= self.data_controller.get_ref_timer()
 
     def do_task(self, vid_source):
         stream= vid_source
@@ -59,12 +60,13 @@ class MotionAnalyzer():
                 new_img_plan= source_stream[0:new_x_origin, new_y_origin:]
         PI= 3.14159
         deg_angle= abs(math.atan2(motion[1], motion[0]) - math.atan2(prev_motion[1], prev_motion[0])) * (180 / PI)
-        self.data_controller.enable_data_access()
+        #self.data_controller.enable_data_access()
         self.data_controller.put_motion_data(x_motion, y_motion, deg_angle)
-        self.data_controller.disable_data_access()
+        #self.data_controller.disable_data_access()
         return x_motion, y_motion, deg_angle
 
     def preprocess_image(self, stream_source):
+        self.data_controller.detection= False
         stream_blur= cv.blur(stream_source, (self.blur_coeff, self.blur_coeff))
         stream_erode= cv.erode(stream_blur, None, iterations= self.erode_iteration)
         stream_gray= cv.cvtColor(stream_erode, cv.COLOR_BGR2GRAY)
@@ -75,14 +77,15 @@ class MotionAnalyzer():
         #if isInit:
         contours, _= cv.findContours(canny_stream, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
         if len(contours) > 0:
+            self.data_controller.detection= True
             big_contour= max(contours, key= cv.contourArea)                                     #On récupère le plus gros contour 
             x, y, w, h= cv.boundingRect(big_contour)
             bc_size= cv.contourArea(big_contour)
             if cv.contourArea(big_contour) > 50:
-                self.data_controller.enable_data_access()
+                #self.data_controller.enable_data_access()
                 self.loc_memory= self.data_controller.update_motion_memory(([[x+(w/2), y+(h/2)]]))
-                self.data_controller.disable_data_access()
-                if (self.loc_memory.shape[0] > 2):
+                #self.data_controller.disable_data_access()
+                if (self.loc_memory.shape[0] > 1):
                     for i in range(self.loc_memory.shape[0]-1):
                         x1= int(self.loc_memory[i, 0])
                         y1= int(self.loc_memory[i, 1])
@@ -90,8 +93,8 @@ class MotionAnalyzer():
                         y2= int(self.loc_memory[i+1, 1])
                         cv.line(stream_source, (x1, y1), (x2, y2), (0, 0, 255-i*20), 3, 8)
                         end_timer= time.perf_counter()
-                        if (end_timer - self.start_plot_timer) >= 0.25:
-                            self.time_second += 0.25
+                        if (end_timer - self.start_plot_timer) >= self.ref_timer:
+                            self.time_second += self.ref_timer
                             #self.data_controller.enable_data_access()
                             self.data_controller.put_move_plot_data(self.time_second, x+(w/2), y+(h/2))
                             #self.data_controller.disable_data_access()
