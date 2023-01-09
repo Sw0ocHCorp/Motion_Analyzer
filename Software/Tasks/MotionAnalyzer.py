@@ -8,7 +8,7 @@ from PyQt5.QtGui import *
 import cv2 as cv
 
 class MotionAnalyzer():
-    def __init__(self, data_controller):
+    def __init__(self, data_controller,  isMain= True):
         self.isInit= False
         self.isActive= True
         self.cam_stream= cv.VideoCapture(0)
@@ -28,6 +28,8 @@ class MotionAnalyzer():
         self.x_motion= self.y_motion= self.deg_angle= 0
         self.time_second= -self.data_controller.get_ref_timer()
         self.ref_timer= self.data_controller.get_ref_timer()
+        self.motion_caracteristics= np.empty((0, 3), int)
+        self.isMain= isMain
 
     def do_task(self, vid_source):
         stream= vid_source
@@ -60,9 +62,6 @@ class MotionAnalyzer():
                 new_img_plan= source_stream[0:new_x_origin, new_y_origin:]
         PI= 3.14159
         deg_angle= abs(math.atan2(motion[1], motion[0]) - math.atan2(prev_motion[1], prev_motion[0])) * (180 / PI)
-        #self.data_controller.enable_data_access()
-        self.data_controller.put_motion_data(x_motion, y_motion, deg_angle)
-        #self.data_controller.disable_data_access()
         return x_motion, y_motion, deg_angle
 
     def preprocess_image(self, stream_source):
@@ -71,10 +70,8 @@ class MotionAnalyzer():
         stream_erode= cv.erode(stream_blur, None, iterations= self.erode_iteration)
         stream_gray= cv.cvtColor(stream_erode, cv.COLOR_BGR2GRAY)
         stream_sharp= cv.filter2D(stream_gray, -1, self.kernel_1)
-        #_, thresh_stream= cv.threshold(stream_gray,0,255,cv.THRESH_BINARY+cv.THRESH_OTSU)
         _, thresh_stream= cv.threshold(stream_sharp,0,255, cv.THRESH_OTSU - cv.THRESH_BINARY)
         canny_stream= cv.Canny(thresh_stream, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
-        #if isInit:
         contours, _= cv.findContours(canny_stream, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
         if len(contours) > 0:
             self.data_controller.detection= True
@@ -82,9 +79,7 @@ class MotionAnalyzer():
             x, y, w, h= cv.boundingRect(big_contour)
             bc_size= cv.contourArea(big_contour)
             if cv.contourArea(big_contour) > 50:
-                #self.data_controller.enable_data_access()
-                self.loc_memory= self.data_controller.update_motion_memory(([[x+(w/2), y+(h/2)]]))
-                #self.data_controller.disable_data_access()
+                self.loc_memory= self.data_controller.update_motion_memory(np.array([[x+(w/2), y+(h/2)]]), self.isMain)
                 if (self.loc_memory.shape[0] > 1):
                     for i in range(self.loc_memory.shape[0]-1):
                         x1= int(self.loc_memory[i, 0])
@@ -95,14 +90,11 @@ class MotionAnalyzer():
                         end_timer= time.perf_counter()
                         if (end_timer - self.start_plot_timer) >= self.ref_timer:
                             self.time_second += self.ref_timer
-                            #self.data_controller.enable_data_access()
-                            self.data_controller.put_move_plot_data(self.time_second, x+(w/2), y+(h/2))
-                            #self.data_controller.disable_data_access()
+                            self.data_controller.put_move_plot_data(self.time_second, x+(w/2), y+(h/2), self.isMain)
                             self.start_plot_timer= time.perf_counter()
                         if (end_timer - self.start_timer) >= 1:
                             start_timer= time.perf_counter()
-                            self.x_motion, self.y_motion, self.deg_angle= self.getMotionData(self.loc_memory, canny_stream, i)
-                            #cv.putText(stream, "Distance Objet -> Camera= {:.2f}".format(refContoqqur / CM_XY_1M), (10, 30), cv.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 1)
+                            self.x_motion, self.y_motion, self.deg_angle= self.getMotionData(self.loc_memory, canny_stream, i) 
                 cv.rectangle(stream_source, (x, y), (x+w, y+h), (0, 255, 0), 2)                        #On trace le Rectangle correspondant
         cv.putText(stream_source, "Distance Objet -> X axis= {:.2f}, Y axis= {:.2f}, Angle= {:.2f}".format(self.x_motion, self.y_motion, self.deg_angle), (10, 30), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1)
         return stream_source
